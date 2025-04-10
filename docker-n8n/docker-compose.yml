@@ -1,0 +1,60 @@
+services:
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=${N8N_PORT}
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - N8N_LOG_LEVEL=${N8N_LOG_LEVEL}
+      - N8N_POSTGREDB_HOST=postgres
+      - N8N_POSTGRES_PORT=5432
+      - N8N_POSTGRES_USER=${POSTGRES_USER}
+      - N8N_POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - N8N_POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+    networks:
+      - n8n_network
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:13
+    container_name: n8n_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - n8n_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: n8n_pgadmin
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "8080:80"
+    volumes:
+      - ./pgadmin_data:/var/lib/pgadmin
+    networks:
+      - n8n_network
+    depends_on:
+      - postgres
+
+networks:
+  n8n_network:
+    driver: bridge
